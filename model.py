@@ -318,7 +318,7 @@ class SoftDotAttention(nn.Module):
         """Initialize layer."""
         super(SoftDotAttention, self).__init__()
         self.linear_in = nn.Linear(dim, dim, bias=False)
-        self.sm = nn.Softmax()
+        self.sm = nn.Softmax(dim=1)
         self.linear_out = nn.Linear(dim * 2, dim, bias=False)
         self.tanh = nn.Tanh()
         self.mask = None
@@ -884,7 +884,7 @@ class Seq2SeqAttention(nn.Module):
     def decode(self, logits):
         """Return probability distribution over words."""
         logits_reshape = logits.view(-1, self.trg_vocab_size)
-        word_probs = F.softmax(logits_reshape)
+        word_probs = F.softmax(logits_reshape, dim=1)
         word_probs = word_probs.view(
             logits.size()[0], logits.size()[1], logits.size()[2]
         )
