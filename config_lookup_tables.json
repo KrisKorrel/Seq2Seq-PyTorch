@@ -39,6 +39,7 @@
     "trg_lang": "en",
     "decode": "greedy",
     "seq2seq": "attention",
-    "optimizer": "adam"
+    "optimizer": "adam",
+    "attention_method": "hard"
   }
 }

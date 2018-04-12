@@ -84,6 +84,7 @@ logging.info('Source RNN Bidirectional  : %s' % (config['model']['bidirectional'
 logging.info('Batch Size : %d ' % (config['model']['n_layers_trg']))
 logging.info('Optimizer : %s ' % (config['training']['optimizer']))
 logging.info('Learning Rate : %f ' % (config['training']['lrate']))
+logging.info('Attention method : %s ' % (config['model']['attention_method']))
 
 logging.info('Found %d words in src ' % (src_vocab_size))
 logging.info('Found %d words in trg ' % (trg_vocab_size))
@@ -134,6 +135,7 @@ elif config['model']['seq2seq'] == 'attention':
         nlayers=config['model']['n_layers_src'],
         nlayers_trg=config['model']['n_layers_trg'],
         dropout=0.,
+        attention_method=config['model']['attention_method']
     )
     if torch.cuda.is_available():
         model.cuda()

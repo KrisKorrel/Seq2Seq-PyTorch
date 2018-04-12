@@ -394,7 +394,7 @@ class HardCodedAttention(nn.Module):
 class LSTMAttentionDot(nn.Module):
     r"""A long short-term memory (LSTM) cell with attention."""
 
-    def __init__(self, input_size, hidden_size, batch_first=True):
+    def __init__(self, input_size, hidden_size, attention_method, batch_first=True):
         """Initialize params."""
         super(LSTMAttentionDot, self).__init__()
         self.input_size = input_size
@@ -405,8 +405,14 @@ class LSTMAttentionDot(nn.Module):
         self.input_weights = nn.Linear(input_size, 4 * hidden_size)
         self.hidden_weights = nn.Linear(hidden_size, 4 * hidden_size)
 
-        self.attention_layer = SoftDotAttention(hidden_size)
-        self.attention_layer = HardCodedAttention(hidden_size)
+        self.attention_method = attention_method
+
+        if self.attention_method == 'hard':
+            self.attention_layer = HardCodedAttention(hidden_size)
+        elif self.attention_method == 'dot':
+            self.attention_layer = SoftDotAttention(hidden_size)
+        else:
+            raise "Unknown attention method"
 
     def forward(self, input, hidden, ctx, ctx_mask=None):
         """Propogate input through the network."""
@@ -424,8 +430,11 @@ class LSTMAttentionDot(nn.Module):
 
             cy = (forgetgate * cx) + (ingate * cellgate)
             hy = outgate * F.tanh(cy)  # n_b x hidden_dim
-            # h_tilde, alpha = self.attention_layer(hy, ctx.transpose(0, 1))
-            h_tilde, alpha = self.attention_layer(hy, ctx.transpose(0, 1), step)
+
+            if self.attention_method == 'dot':
+                h_tilde, alpha = self.attention_layer(hy, ctx.transpose(0, 1))
+            elif self.attention_method == 'hard':
+                h_tilde, alpha = self.attention_layer(hy, ctx.transpose(0, 1), step)
 
             return h_tilde, cy
 
@@ -802,7 +811,8 @@ class Seq2SeqAttention(nn.Module):
         batch_size,
         pad_token_src,
         pad_token_trg,
-        bidirectional=True,
+        attention_method,
+        bidirectional=False,
         nlayers=2,
         nlayers_trg=2,
         dropout=0.,
@@ -824,6 +834,7 @@ class Seq2SeqAttention(nn.Module):
         self.num_directions = 2 if bidirectional else 1
         self.pad_token_src = pad_token_src
         self.pad_token_trg = pad_token_trg
+        self.attention_method = attention_method
 
         self.src_embedding = nn.Embedding(
             src_vocab_size,
@@ -850,7 +861,8 @@ class Seq2SeqAttention(nn.Module):
         self.decoder = LSTMAttentionDot(
             trg_emb_dim,
             trg_hidden_dim,
-            batch_first=True
+            batch_first=True,
+            attention_method=self.attention_method
         )
 
         self.encoder2decoder = nn.Linear(
