@@ -84,6 +84,7 @@ logging.info('Source RNN Bidirectional  : %s' % (config['model']['bidirectional'
 logging.info('Batch Size : %d ' % (config['model']['n_layers_trg']))
 logging.info('Optimizer : %s ' % (config['training']['optimizer']))
 logging.info('Learning Rate : %f ' % (config['training']['lrate']))
+logging.info('Number of epochs : %d ' % (config['training']['epochs']))
 logging.info('Attention method : %s ' % (config['model']['attention_method']))
 
 logging.info('Found %d words in src ' % (src_vocab_size))
@@ -177,7 +178,8 @@ elif config['training']['optimizer'] == 'sgd':
 else:
     raise NotImplementedError("Learning method not recommend for task")
 
-for i in xrange(1000):
+n_epochs = config['training']['epochs']
+for i in xrange(n_epochs):
     losses = []
     for j in xrange(0, len(src['data']), batch_size):
 

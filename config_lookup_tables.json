@@ -2,7 +2,8 @@
   "training": {
     "optimizer": "adam",
     "clip_c": 1,
-    "lrate": 0.001
+    "lrate": 0.001,
+    "epochs": 100
   },
   "management": {
     "monitor_loss": 1000,
