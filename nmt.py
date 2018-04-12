@@ -233,13 +233,13 @@ for i in xrange(1000):
         if j % config['management']['checkpoint_freq'] == 0:
 
             logging.info('Evaluating model ...')
-            bleu = evaluate_model(
+            seq_acc = evaluate_model(
                 model, src, src_test, trg,
                 trg_test, config, verbose=False,
-                metric='bleu',
+                metric='seq_acc',
             )
 
-            logging.info('Epoch : %d Minibatch : %d : BLEU : %.5f ' % (i, j, bleu))
+            logging.info('Epoch : %d Minibatch : %d : Sequence accuracy : %.5f ' % (i, j, seq_acc))
 
             logging.info('Saving model ...')
 
@@ -251,13 +251,13 @@ for i in xrange(1000):
                 )
             )
 
-    bleu = evaluate_model(
+    seq_acc = evaluate_model(
         model, src, src_test, trg,
         trg_test, config, verbose=False,
-        metric='bleu',
+        metric='seq_acc',
     )
 
-    logging.info('Epoch : %d : BLEU : %.5f ' % (i, bleu))
+    logging.info('Epoch : %d : Sequence accuracy : %.5f ' % (i, seq_acc))
 
     torch.save(
         model.state_dict(),

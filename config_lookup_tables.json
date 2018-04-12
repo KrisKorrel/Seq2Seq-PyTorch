@@ -14,7 +14,7 @@
     "trg": "data/train-target.csv",
     "test_src": "data/validation-source.csv",
     "test_trg": "data/validation-target.csv",
-    "batch_size": 80,
+    "batch_size": 10,
     "n_words_trg": 30000,
     "valid_batch_size": 80,
     "n_words_src": 30000,

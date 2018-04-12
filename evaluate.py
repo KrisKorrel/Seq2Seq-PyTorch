@@ -49,6 +49,22 @@ def get_bleu(hypotheses, reference):
         stats += np.array(bleu_stats(hyp, ref))
     return 100 * bleu(stats)
 
+def get_sequence_accuracy(hypotheses, reference):
+    assert len(hypotheses) == len(reference)
+
+    batch_size = len(hypotheses)
+    correct = 0
+
+    for i in range(batch_size):
+        prediction = hypotheses[i][1:]
+        target = reference[i]
+
+        if prediction == target:
+            correct += 1
+
+    seq_acc = float(correct) / batch_size
+
+    return seq_acc
 
 def get_bleu_moses(hypotheses, reference):
     """Get BLEU score with moses bleu score."""
@@ -219,7 +235,12 @@ def evaluate_model(
                 print '--------------------------------------'
             ground_truths.append(['<s>'] + sentence_real[:index + 1])
 
-    return get_bleu(preds, ground_truths)
+    if metric == 'bleu':
+        metric_to_return = get_bleu(preds, ground_truths)
+    elif metric == 'seq_acc':
+        metric_to_return = get_sequence_accuracy(preds, ground_truths)
+
+    return metric_to_return
 
 
 def evaluate_autoencode_model(
