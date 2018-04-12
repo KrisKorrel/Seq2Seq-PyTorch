@@ -58,10 +58,10 @@ src, trg = read_nmt_data(
     trg=config['data']['trg']
 )
 
-src_test, trg_test = read_nmt_data(
-    src=config['data']['test_src'],
+src_val, trg_val = read_nmt_data(
+    src=config['data']['val_src'],
     config=config,
-    trg=config['data']['test_trg']
+    trg=config['data']['val_trg']
 )
 
 batch_size = config['data']['batch_size']
@@ -256,8 +256,8 @@ for i in xrange(n_epochs):
         #     )
 
     seq_acc = evaluate_model(
-        model, src, src_test, trg,
-        trg_test, config, verbose=False,
+        model, src, src_val, trg,
+        trg_val, config, verbose=False,
         metric='seq_acc',
     )
 
@@ -272,3 +272,108 @@ for i in xrange(n_epochs):
     )
 
     print ""
+
+# Get test data
+src_test1, trg_test1 = read_nmt_data(
+    src=config['data']['test1_src'],
+    config=config,
+    trg=config['data']['test1_trg']
+)
+src_test2, trg_test2 = read_nmt_data(
+    src=config['data']['test2_src'],
+    config=config,
+    trg=config['data']['test2_trg']
+)
+src_test3, trg_test3 = read_nmt_data(
+    src=config['data']['test3_src'],
+    config=config,
+    trg=config['data']['test3_trg']
+)
+src_test4, trg_test4 = read_nmt_data(
+    src=config['data']['test4_src'],
+    config=config,
+    trg=config['data']['test4_trg']
+)
+src_test5, trg_test5 = read_nmt_data(
+    src=config['data']['test5_src'],
+    config=config,
+    trg=config['data']['test5_trg']
+)
+
+
+seq_acc = evaluate_model(
+        model,
+        src, src,
+        trg, trg,
+        config, verbose=False,
+        metric='seq_acc',
+)
+logging.info("Train data")
+logging.info('Sequence accuracy : %.5f ' % (seq_acc))
+print ""
+
+seq_acc = evaluate_model(
+        model,
+        src, src_val,
+        trg, trg_val,
+        config, verbose=False,
+        metric='seq_acc',
+)
+logging.info("Validation data")
+logging.info('Sequence accuracy : %.5f ' % (seq_acc))
+print ""
+
+seq_acc = evaluate_model(
+        model,
+        src, src_test1,
+        trg, trg_test1,
+        config, verbose=False,
+        metric='seq_acc',
+)
+logging.info("Test data 1 heldout")
+logging.info('Sequence accuracy : %.5f ' % (seq_acc))
+print ""
+
+seq_acc = evaluate_model(
+        model,
+        src, src_test2,
+        trg, trg_test2,
+        config, verbose=False,
+        metric='seq_acc',
+)
+logging.info("Test data 2 subset")
+logging.info('Sequence accuracy : %.5f ' % (seq_acc))
+print ""
+
+seq_acc = evaluate_model(
+        model,
+        src, src_test3,
+        trg, trg_test3,
+        config, verbose=False,
+        metric='seq_acc',
+)
+logging.info("Test data 3 hybrid")
+logging.info('Sequence accuracy : %.5f ' % (seq_acc))
+print ""
+
+seq_acc = evaluate_model(
+        model,
+        src, src_test4,
+        trg, trg_test4,
+        config, verbose=False,
+        metric='seq_acc',
+)
+logging.info("Test data 4 unseen")
+logging.info('Sequence accuracy : %.5f ' % (seq_acc))
+print ""
+
+seq_acc = evaluate_model(
+        model,
+        src, src_test5,
+        trg, trg_test5,
+        config, verbose=False,
+        metric='seq_acc',
+)
+logging.info("Test data 5 longer")
+logging.info('Sequence accuracy : %.5f ' % (seq_acc))
+print ""
