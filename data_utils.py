@@ -197,9 +197,15 @@ def get_minibatch(
         for l in lens
     ]
 
-    input_lines = Variable(torch.LongTensor(input_lines)).cuda()
-    output_lines = Variable(torch.LongTensor(output_lines)).cuda()
-    mask = Variable(torch.FloatTensor(mask)).cuda()
+    input_lines = Variable(torch.LongTensor(input_lines))
+    if torch.cuda.is_available():
+        input_lines.cuda()
+    output_lines = Variable(torch.LongTensor(output_lines))
+    if torch.cuda.is_available():
+        output_lines.cuda()
+    mask = Variable(torch.FloatTensor(mask))
+    if torch.cuda.is_available():
+        mask.cuda()
 
     return input_lines, output_lines, lens, mask
 
@@ -251,8 +257,14 @@ def get_autoencode_minibatch(
         for l in lens
     ]
 
-    input_lines = Variable(torch.LongTensor(input_lines)).cuda()
-    output_lines = Variable(torch.LongTensor(output_lines)).cuda()
-    mask = Variable(torch.FloatTensor(mask)).cuda()
+    input_lines = Variable(torch.LongTensor(input_lines))
+    if torch.cuda.is_available():
+        input_lines.cuda()
+    output_lines = Variable(torch.LongTensor(output_lines))
+    if torch.cuda.is_available():
+        output_lines.cuda()
+    mask = Variable(torch.FloatTensor(mask))
+    if torch.cuda.is_available():
+        mask.cuda()
 
     return input_lines, output_lines, lens, mask

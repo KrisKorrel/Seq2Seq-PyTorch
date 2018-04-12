@@ -88,9 +88,13 @@ logging.info('Learning Rate : %f ' % (config['training']['lrate']))
 logging.info('Found %d words in src ' % (src_vocab_size))
 logging.info('Found %d words in trg ' % (trg_vocab_size))
 
-weight_mask = torch.ones(trg_vocab_size).cuda()
+weight_mask = torch.ones(trg_vocab_size)
+if torch.cuda.is_available():
+    weight_mask.cuda()
 weight_mask[trg['word2id']['<pad>']] = 0
-loss_criterion = nn.CrossEntropyLoss(weight=weight_mask).cuda()
+loss_criterion = nn.CrossEntropyLoss(weight=weight_mask)
+if torch.cuda.is_available():
+    loss_criterion.cuda()
 
 if config['model']['seq2seq'] == 'vanilla':
 
@@ -108,7 +112,9 @@ if config['model']['seq2seq'] == 'vanilla':
         nlayers=config['model']['n_layers_src'],
         nlayers_trg=config['model']['n_layers_trg'],
         dropout=0.,
-    ).cuda()
+    )
+    if torch.cuda.is_available():
+        model.cuda()
 
 elif config['model']['seq2seq'] == 'attention':
 
@@ -128,7 +134,9 @@ elif config['model']['seq2seq'] == 'attention':
         nlayers=config['model']['n_layers_src'],
         nlayers_trg=config['model']['n_layers_trg'],
         dropout=0.,
-    ).cuda()
+    )
+    if torch.cuda.is_available():
+        model.cuda()
 
 elif config['model']['seq2seq'] == 'fastattention':
 
@@ -146,7 +154,9 @@ elif config['model']['seq2seq'] == 'fastattention':
         nlayers=config['model']['n_layers_src'],
         nlayers_trg=config['model']['n_layers_trg'],
         dropout=0.,
-    ).cuda()
+    )
+    if torch.cuda.is_available():
+        model.cuda()
 
 if load_dir:
     model.load_state_dict(torch.load(
