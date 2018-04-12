@@ -200,7 +200,7 @@ for i in xrange(1000):
         optimizer.step()
 
         if j % config['management']['monitor_loss'] == 0:
-            logging.info('Epoch : %d Minibatch : %d Loss : %.5f' % (
+            logging.info('Epoch : %d Minibatch : %d Training loss : %.5f' % (
                 i, j, np.mean(losses))
             )
             losses = []
@@ -230,26 +230,26 @@ for i in xrange(1000):
                 logging.info('Real : %s ' % (' '.join(sentence_real)))
                 logging.info('===============================================')
 
-        if j % config['management']['checkpoint_freq'] == 0:
+        # if j % config['management']['checkpoint_freq'] == 0 and False:
 
-            logging.info('Evaluating model ...')
-            seq_acc = evaluate_model(
-                model, src, src_test, trg,
-                trg_test, config, verbose=False,
-                metric='seq_acc',
-            )
+        #     logging.info('Evaluating model ...')
+        #     seq_acc = evaluate_model(
+        #         model, src, src_test, trg,
+        #         trg_test, config, verbose=False,
+        #         metric='seq_acc',
+        #     )
 
-            logging.info('Epoch : %d Minibatch : %d : Sequence accuracy : %.5f ' % (i, j, seq_acc))
+        #     logging.info('Epoch : %d Minibatch : %d : Sequence accuracy : %.5f ' % (i, j, seq_acc))
 
-            logging.info('Saving model ...')
+        #     logging.info('Saving model ...')
 
-            torch.save(
-                model.state_dict(),
-                open(os.path.join(
-                    save_dir,
-                    experiment_name + '__epoch_%d__minibatch_%d' % (i, j) + '.model'), 'wb'
-                )
-            )
+        #     torch.save(
+        #         model.state_dict(),
+        #         open(os.path.join(
+        #             save_dir,
+        #             experiment_name + '__epoch_%d__minibatch_%d' % (i, j) + '.model'), 'wb'
+        #         )
+        #     )
 
     seq_acc = evaluate_model(
         model, src, src_test, trg,
@@ -257,7 +257,7 @@ for i in xrange(1000):
         metric='seq_acc',
     )
 
-    logging.info('Epoch : %d : Sequence accuracy : %.5f ' % (i, seq_acc))
+    logging.info('Epoch : %d : Validation sequence accuracy : %.5f ' % (i, seq_acc))
 
     torch.save(
         model.state_dict(),
@@ -266,3 +266,5 @@ for i in xrange(1000):
             experiment_name + '__epoch_%d' % (i) + '.model'), 'wb'
         )
     )
+
+    print ""
