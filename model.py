@@ -301,7 +301,6 @@ class LSTMAttention(nn.Module):
                 input[i], hidden, projected_input[i], projected_ctx
             )
             output.append(isinstance(hidden, tuple) and hidden[0] or hidden)
-
         output = torch.cat(output, 0).view(input.size(0), *output[0].size())
 
         return output, hidden
@@ -329,11 +328,59 @@ class SoftDotAttention(nn.Module):
         input: batch x dim
         context: batch x sourceL x dim
         """
+        # Propagate decoder state through one linear layer and add extra dimension
         target = self.linear_in(input).unsqueeze(2)  # batch x dim x 1
 
-        # Get attention
+        # Dot product the decoder state with each encoder state
         attn = torch.bmm(context, target).squeeze(2)  # batch x sourceL
+        # Apply softmax
         attn = self.sm(attn)
+        # Add extra dimension
+        attn3 = attn.view(attn.size(0), 1, attn.size(1))  # batch x 1 x sourceL
+
+        # Get weighted/attended context vector
+        weighted_context = torch.bmm(attn3, context).squeeze(1)  # batch x dim
+        # Concatenate decoder state with context vector
+        h_tilde = torch.cat((weighted_context, input), 1)
+
+        # Nonlinear layer
+        h_tilde = self.tanh(self.linear_out(h_tilde))
+
+        return h_tilde, attn
+
+class HardCodedAttention(nn.Module):
+    def __init__(self, dim):
+        """Initialize layer."""
+        super(HardCodedAttention, self).__init__()
+        self.sm = nn.Softmax(dim=1)
+        self.linear_out = nn.Linear(dim * 2, dim, bias=False)
+        self.tanh = nn.Tanh()
+        self.mask = None
+
+    def forward(self, input, context, step):
+        """Propogate input through the network.
+
+        input: batch x dim
+        context: batch x sourceL x dim
+        """
+        batch_size, enc_seqlen, enc_dim = context.size()
+
+        # Initialize attention vectors with all zeros
+        attn = torch.zeros(batch_size, enc_seqlen)
+
+        # Get the indices of the encoder state that needs to be attended to.
+        # For decoder step 'step' this will be encoder step 'step'. 
+        # In the case that the decoder lenghth is longer than the encoder length, we always attend to the last encoder states
+        if step < enc_seqlen:
+            # Fill the attention vectors with a 1 at the specified indices/step
+            indices = step * torch.ones(batch_size, 1).long()
+        else:
+            indices = (enc_seqlen-1) * torch.ones(batch_size, 1).long()
+
+        # Fill the attention vectors with 1's at the right indices
+        attn = attn.scatter_(dim=1, index=indices, value=1)
+        attn = torch.autograd.Variable(attn, requires_grad=False)
+
         attn3 = attn.view(attn.size(0), 1, attn.size(1))  # batch x 1 x sourceL
 
         weighted_context = torch.bmm(attn3, context).squeeze(1)  # batch x dim
@@ -359,10 +406,11 @@ class LSTMAttentionDot(nn.Module):
         self.hidden_weights = nn.Linear(hidden_size, 4 * hidden_size)
 
         self.attention_layer = SoftDotAttention(hidden_size)
+        self.attention_layer = HardCodedAttention(hidden_size)
 
     def forward(self, input, hidden, ctx, ctx_mask=None):
         """Propogate input through the network."""
-        def recurrence(input, hidden):
+        def recurrence(input, hidden, step):
             """Recurrence helper."""
             hx, cx = hidden  # n_b x hidden_dim
             gates = self.input_weights(input) + \
@@ -376,7 +424,8 @@ class LSTMAttentionDot(nn.Module):
 
             cy = (forgetgate * cx) + (ingate * cellgate)
             hy = outgate * F.tanh(cy)  # n_b x hidden_dim
-            h_tilde, alpha = self.attention_layer(hy, ctx.transpose(0, 1))
+            # h_tilde, alpha = self.attention_layer(hy, ctx.transpose(0, 1))
+            h_tilde, alpha = self.attention_layer(hy, ctx.transpose(0, 1), step)
 
             return h_tilde, cy
 
@@ -386,7 +435,7 @@ class LSTMAttentionDot(nn.Module):
         output = []
         steps = range(input.size(0))
         for i in steps:
-            hidden = recurrence(input[i], hidden)
+            hidden = recurrence(input[i], hidden, i)
             if isinstance(hidden, tuple):
                 output.append(hidden[0])
             else:
